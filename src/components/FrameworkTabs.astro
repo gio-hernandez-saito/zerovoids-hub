@@ -1,0 +1,116 @@
+---
+// 프레임워크별 코드를 탭으로 전환하는 컴포넌트 — CodeBox 통합
+import CodeBox from './CodeBox.astro';
+
+interface Tab {
+  id: string;
+  label: string;
+  filename: string;
+  code: string;      // Shiki 하이라이트된 HTML
+  rawCode: string;   // 복사용 원본 코드
+}
+
+interface Props {
+  tabs: Tab[];
+}
+
+const { tabs } = Astro.props;
+---
+
+<div class="fw-tabs" data-fwtabs>
+  <div class="tab-bar">
+    {tabs.map((tab, i) => (
+      <button
+        class:list={['tab-btn', { active: i === 0 }]}
+        data-tab={tab.id}
+      >
+        <span class={`tab-dot tab-dot-${tab.id}`} />
+        {tab.label}
+      </button>
+    ))}
+  </div>
+
+  {tabs.map((tab, i) => (
+    <div class:list={['tab-panel', { active: i === 0 }]} data-panel={tab.id}>
+      <CodeBox
+        filename={tab.filename}
+        code={tab.code}
+        rawCode={tab.rawCode}
+      />
+    </div>
+  ))}
+</div>
+
+<script>
+  document.querySelectorAll('[data-fwtabs]').forEach(container => {
+    const buttons = container.querySelectorAll('[data-tab]');
+    const panels = container.querySelectorAll('[data-panel]');
+
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const target = (btn as HTMLElement).dataset.tab;
+        buttons.forEach(b => b.classList.remove('active'));
+        panels.forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        container.querySelector(`[data-panel="${target}"]`)?.classList.add('active');
+      });
+    });
+  });
+</script>
+
+<style>
+  .fw-tabs {
+    margin: 1rem 0;
+  }
+
+  .tab-bar {
+    display: flex;
+    border-bottom: 2px solid var(--color-border);
+    margin-bottom: -1px;
+  }
+
+  .tab-btn {
+    padding: 0.6rem 1.25rem;
+    background: none;
+    border: none;
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+
+  .tab-btn:hover {
+    color: var(--color-text-secondary);
+  }
+
+  .tab-btn.active {
+    color: var(--color-text);
+    border-bottom-color: var(--color-accent);
+  }
+
+  .tab-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  .tab-dot-typescript { background: #3178c6; }
+  .tab-dot-react { background: #61dafb; }
+  .tab-dot-vue { background: #42b883; }
+  .tab-dot-svelte { background: #ff3e00; }
+
+  .tab-panel {
+    display: none;
+  }
+
+  .tab-panel.active {
+    display: block;
+  }
+</style>

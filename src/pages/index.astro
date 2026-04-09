@@ -1,0 +1,89 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Home" section="home">
+  <div class="hero">
+    <h1 class="hero-title">zerovoids</h1>
+    <p class="hero-desc">
+      흩어진 조각들을 하나로 모으는 공간.
+    </p>
+  </div>
+
+  <div class="sections">
+    <a href="/ideas/" class="section-card">
+      <span class="section-icon">&#10022;</span>
+      <h2>Idea Bank</h2>
+      <p>개발 아이디어를 키워드 네트워크로 탐색하고, 레이더차트로 평가합니다.</p>
+    </a>
+    <a href="/patterns/" class="section-card">
+      <span class="section-icon">&#9670;</span>
+      <h2>Design Patterns</h2>
+      <p>23개 GoF 디자인 패턴을 TypeScript, React, Vue, Svelte로 비교합니다.</p>
+    </a>
+  </div>
+</Layout>
+
+<style>
+  .hero {
+    text-align: center;
+    margin-bottom: 4rem;
+    padding-top: 3rem;
+  }
+
+  .hero-title {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    background: linear-gradient(135deg, #38bdf8, #818cf8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-desc {
+    color: var(--color-text-secondary);
+    font-size: 1.1rem;
+  }
+
+  .sections {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.5rem;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .section-card {
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: 2rem;
+    transition: all 0.2s;
+    color: inherit;
+  }
+
+  .section-card:hover {
+    background: var(--color-bg-card-hover);
+    border-color: var(--color-accent);
+    transform: translateY(-2px);
+    color: inherit;
+  }
+
+  .section-icon {
+    font-size: 1.5rem;
+    color: var(--color-accent);
+    display: block;
+    margin-bottom: 0.75rem;
+  }
+
+  .section-card h2 {
+    font-size: 1.25rem;
+    margin: 0 0 0.5rem 0;
+  }
+
+  .section-card p {
+    color: var(--color-text-secondary);
+    font-size: 0.9rem;
+    margin: 0;
+  }
+</style>

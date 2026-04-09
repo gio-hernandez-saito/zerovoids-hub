@@ -1,0 +1,76 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import NetworkGraph from '../../components/NetworkGraph';
+import IdeaList from '../../components/IdeaList';
+
+let ideas: any[] = [];
+let network: any = { nodes: [], links: [] };
+
+try {
+  const ideasModule = await import('../../data/ideas.json');
+  ideas = ideasModule.default as any[];
+} catch {
+  // data file not yet generated
+}
+
+try {
+  const networkModule = await import('../../data/network.json');
+  network = networkModule.default as any;
+} catch {
+  // data file not yet generated
+}
+---
+
+<Layout title="Idea Bank" section="ideas">
+  <div class="hero">
+    <h1>Idea Bank</h1>
+    <p class="hero-desc">
+      {ideas.length}개의 아이디어 · 키워드 네트워크로 탐색하고, 마크다운으로 읽고, 레이더차트로 평가를 봅니다.
+    </p>
+  </div>
+
+  <section class="network-section">
+    <h2>Keyword Network</h2>
+    <p class="section-desc">노드를 클릭하여 탐색합니다. 아이디어 노드(색상)를 클릭하면 상세 페이지로, 태그 노드(회색)를 클릭하면 연결된 아이디어를 하이라이트합니다.</p>
+    <NetworkGraph data={network} client:load />
+  </section>
+
+  <section class="list-section">
+    <h2>All Ideas</h2>
+    <IdeaList ideas={ideas} client:load />
+  </section>
+</Layout>
+
+<style>
+  .hero {
+    margin-bottom: 2.5rem;
+  }
+
+  .hero h1 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .hero-desc {
+    color: var(--color-text-secondary);
+    font-size: 0.95rem;
+  }
+
+  .network-section {
+    margin-bottom: 3rem;
+  }
+
+  .network-section h2 {
+    margin-bottom: 0.5rem;
+  }
+
+  .section-desc {
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+  }
+
+  .list-section h2 {
+    margin-bottom: 1rem;
+  }
+</style>

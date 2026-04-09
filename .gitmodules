@@ -1,0 +1,6 @@
+[submodule "content/idea-bank"]
+	path = content/idea-bank
+	url = https://github.com/gio-hernandez-saito/zerovoids-idea-bank.git
+[submodule "content/design-patterns"]
+	path = content/design-patterns
+	url = https://github.com/gio-hernandez-saito/design-patterns.git

@@ -1,0 +1,254 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import RadarChart from '../../components/RadarChart';
+import { marked } from 'marked';
+
+let ideas: any[] = [];
+
+try {
+  const ideasModule = await import('../../data/ideas.json');
+  ideas = ideasModule.default as any[];
+} catch {
+  // data file not yet generated
+}
+
+export async function getStaticPaths() {
+  let ideasData: any[] = [];
+  try {
+    const mod = await import('../../data/ideas.json');
+    ideasData = mod.default as any[];
+  } catch {
+    return [];
+  }
+  return ideasData.map((idea: any) => ({
+    params: { id: String(idea.ideaIndex).padStart(4, '0') },
+  }));
+}
+
+const { id } = Astro.params;
+const idea = ideas.find(i => String(i.ideaIndex).padStart(4, '0') === id);
+
+if (!idea) {
+  return Astro.redirect('/ideas/');
+}
+
+const htmlContent = await marked(idea.body || '');
+
+// Prev/Next navigation
+const currentIdx = ideas.findIndex(i => i.ideaIndex === idea.ideaIndex);
+const prev = currentIdx > 0 ? ideas[currentIdx - 1] : null;
+const next = currentIdx < ideas.length - 1 ? ideas[currentIdx + 1] : null;
+
+const CATEGORY_COLORS: Record<string, string> = {
+  automation: '#10b981',
+  visualization: '#3b82f6',
+  frontend: '#8b5cf6',
+  'developer-tool': '#f59e0b',
+  gaming: '#ef4444',
+  creative: '#ec4899',
+  utility: '#06b6d4',
+  experimental: '#f97316',
+  data: '#14b8a6',
+  infrastructure: '#6366f1',
+  learning: '#84cc16',
+  entertainment: '#e879f9',
+};
+
+const catColor = CATEGORY_COLORS[idea.category] || '#64748b';
+---
+
+<Layout title={idea.title} section="ideas">
+  <div class="idea-header">
+    <a href="/ideas/" class="back-link">← 아이디어 목록</a>
+    <div class="idea-meta-row">
+      <span class="idea-index">#{String(idea.ideaIndex).padStart(4, '0')}</span>
+      <span class="idea-category" style={`--cat-color: ${catColor}`}>{idea.category}</span>
+      <span class="idea-difficulty">{idea.difficulty}</span>
+      {idea.estimatedTime && <span class="idea-time">{idea.estimatedTime}</span>}
+    </div>
+    <h1>{idea.title}</h1>
+    <div class="tags">
+      {idea.tags.map((tag: string) => (
+        <span class="tag">{tag}</span>
+      ))}
+    </div>
+  </div>
+
+  <div class="idea-layout">
+    <div class="idea-sidebar">
+      <div class="eval-card">
+        <h3>Evaluation</h3>
+        <div class="total-score">
+          <span class="score-value">{idea.evaluation.total?.toFixed(1)}</span>
+          <span class="score-label">/ 10</span>
+        </div>
+        <RadarChart scores={idea.evaluation} client:load />
+        <div class="tech-stack">
+          <h4>Tech Stack</h4>
+          <div class="tech-tags">
+            {(idea.techStack || []).map((tech: string) => (
+              <span class="tech-tag">{tech}</span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="idea-content" set:html={htmlContent} />
+  </div>
+
+  <nav class="idea-nav">
+    {prev && (
+      <a href={`/ideas/${String(prev.ideaIndex).padStart(4, '0')}/`} class="nav-prev">
+        ← #{String(prev.ideaIndex).padStart(4, '0')} {prev.title}
+      </a>
+    )}
+    {next && (
+      <a href={`/ideas/${String(next.ideaIndex).padStart(4, '0')}/`} class="nav-next">
+        #{String(next.ideaIndex).padStart(4, '0')} {next.title} →
+      </a>
+    )}
+  </nav>
+</Layout>
+
+<style>
+  .idea-header { margin-bottom: 2rem; }
+  .back-link { font-size: 0.85rem; color: var(--color-text-muted); display: inline-block; margin-bottom: 1rem; }
+  .back-link:hover { color: var(--color-accent); }
+
+  .idea-meta-row {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    margin-bottom: 0.75rem;
+  }
+
+  .idea-index {
+    font-family: 'Fira Code', monospace;
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+  }
+
+  .idea-category {
+    font-size: 0.75rem;
+    background: color-mix(in srgb, var(--cat-color) 15%, transparent);
+    color: var(--cat-color);
+    padding: 0.2rem 0.6rem;
+    border-radius: 10px;
+  }
+
+  .idea-difficulty, .idea-time {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+  }
+
+  .idea-header h1 {
+    font-size: 1.75rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .tags { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+  .tag {
+    font-size: 0.75rem;
+    background: var(--color-bg-code);
+    color: var(--color-text-secondary);
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+  }
+
+  .idea-layout {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 2rem;
+    align-items: start;
+  }
+
+  @media (max-width: 900px) {
+    .idea-layout {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .idea-sidebar {
+    position: sticky;
+    top: calc(var(--header-height) + 1rem);
+  }
+
+  .eval-card {
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    padding: 1.25rem;
+  }
+
+  .eval-card h3 {
+    font-size: 0.9rem;
+    margin-bottom: 0.75rem;
+    color: var(--color-text-secondary);
+  }
+
+  .total-score {
+    text-align: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .score-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-accent);
+  }
+
+  .score-label {
+    font-size: 1rem;
+    color: var(--color-text-muted);
+  }
+
+  .tech-stack { margin-top: 1.25rem; }
+  .tech-stack h4 { font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: 0.5rem; }
+  .tech-tags { display: flex; gap: 0.3rem; flex-wrap: wrap; }
+  .tech-tag {
+    font-size: 0.7rem;
+    background: rgba(56, 189, 248, 0.1);
+    color: var(--color-accent);
+    padding: 0.15rem 0.45rem;
+    border-radius: 4px;
+  }
+
+  .idea-content {
+    line-height: 1.8;
+  }
+
+  .idea-content :global(h2) {
+    font-size: 1.4rem;
+    margin-top: 2.5rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .idea-content :global(h3) {
+    font-size: 1.1rem;
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .idea-nav {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .nav-prev, .nav-next {
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+    max-width: 45%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .nav-prev:hover, .nav-next:hover { color: var(--color-accent); }
+  .nav-next { margin-left: auto; text-align: right; }
+</style>

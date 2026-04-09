@@ -1,0 +1,244 @@
+---
+// CodeBox — 파일명 헤더, 복사 버튼, 라인 넘버, 접기/펼치기 기능이 있는 코드 박스
+interface Props {
+  filename: string;
+  code: string;         // Shiki로 하이라이트된 HTML
+  rawCode: string;      // 복사용 원본 코드
+  maxLines?: number;    // 이 줄 수 초과 시 접기 (기본 30)
+}
+
+const { filename, code, rawCode, maxLines = 30 } = Astro.props;
+const lineCount = rawCode.split('\n').length;
+const isCollapsible = lineCount > maxLines;
+
+// 파일 확장자에서 언어 아이콘 색상 결정
+const ext = filename.split('.').pop() ?? '';
+const langColor: Record<string, string> = {
+  ts: '#3178c6',
+  tsx: '#61dafb',
+  vue: '#42b883',
+  svelte: '#ff3e00',
+};
+const dotColor = langColor[ext] ?? '#94a3b8';
+---
+
+<div class:list={['codebox', { collapsible: isCollapsible }]} data-codebox>
+  <div class="codebox-header">
+    <div class="codebox-file">
+      <span class="codebox-dot" style={`background: ${dotColor}`} />
+      <span class="codebox-filename">{filename}</span>
+      <span class="codebox-lines">{lineCount}줄</span>
+    </div>
+    <button class="codebox-copy" data-copy title="코드 복사">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="9" y="9" width="13" height="13" rx="2" />
+        <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+      </svg>
+      <span class="copy-text">복사</span>
+    </button>
+  </div>
+  <div class="codebox-body" data-body>
+    <div class="codebox-linenumbers" aria-hidden="true">
+      {Array.from({ length: lineCount }, (_, i) => (
+        <span>{i + 1}</span>
+      ))}
+    </div>
+    <div class="codebox-code" set:html={code} />
+  </div>
+  {isCollapsible && (
+    <button class="codebox-toggle" data-toggle>
+      <span class="toggle-text">전체 보기 ({lineCount}줄)</span>
+      <svg class="toggle-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    </button>
+  )}
+</div>
+
+{/* 복사용 원본 코드를 hidden textarea에 저장 */}
+<textarea class="codebox-raw" aria-hidden="true" style="display:none">{rawCode}</textarea>
+
+<script>
+  document.querySelectorAll('[data-codebox]').forEach(box => {
+    // 복사 버튼
+    const copyBtn = box.querySelector('[data-copy]');
+    const rawEl = box.nextElementSibling as HTMLTextAreaElement;
+    if (copyBtn && rawEl) {
+      copyBtn.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(rawEl.value);
+          const textEl = copyBtn.querySelector('.copy-text');
+          if (textEl) {
+            textEl.textContent = '완료!';
+            setTimeout(() => { textEl.textContent = '복사'; }, 1500);
+          }
+        } catch {}
+      });
+    }
+
+    // 접기/펼치기
+    const toggleBtn = box.querySelector('[data-toggle]');
+    if (toggleBtn) {
+      toggleBtn.addEventListener('click', () => {
+        box.classList.toggle('expanded');
+        const textEl = toggleBtn.querySelector('.toggle-text');
+        if (textEl) {
+          textEl.textContent = box.classList.contains('expanded') ? '접기' : `전체 보기 (${rawEl?.value.split('\n').length}줄)`;
+        }
+      });
+    }
+  });
+</script>
+
+<style>
+  .codebox {
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 0.75rem 0;
+    background: var(--color-bg-code);
+  }
+
+  .codebox-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0.75rem;
+    background: #161b22;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .codebox-file {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .codebox-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .codebox-filename {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-text);
+    font-family: 'Fira Code', monospace;
+  }
+
+  .codebox-lines {
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
+  }
+
+  .codebox-copy {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: none;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    color: var(--color-text-muted);
+    padding: 0.25rem 0.6rem;
+    font-size: 0.7rem;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+
+  .codebox-copy:hover {
+    color: var(--color-text);
+    border-color: var(--color-text-muted);
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .codebox-body {
+    display: flex;
+    overflow-x: auto;
+    max-height: 600px;
+    overflow-y: auto;
+  }
+
+  /* 접기 상태 */
+  .codebox.collapsible:not(.expanded) .codebox-body {
+    max-height: 400px;
+    overflow-y: hidden;
+    mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
+  }
+
+  .codebox.expanded .codebox-body {
+    max-height: none;
+  }
+
+  .codebox-linenumbers {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem 0;
+    text-align: right;
+    user-select: none;
+    border-right: 1px solid var(--color-border);
+    background: rgba(0, 0, 0, 0.15);
+    position: sticky;
+    left: 0;
+    z-index: 1;
+  }
+
+  .codebox-linenumbers span {
+    padding: 0 0.75rem;
+    font-size: 0.75rem;
+    line-height: 1.6;
+    color: var(--color-text-muted);
+    font-family: 'Fira Code', monospace;
+  }
+
+  .codebox-code {
+    flex: 1;
+    overflow-x: auto;
+  }
+
+  .codebox-code :global(pre) {
+    margin: 0;
+    border: none;
+    border-radius: 0;
+    padding: 1rem;
+    background: transparent !important;
+  }
+
+  .codebox-code :global(code) {
+    background: none;
+    padding: 0;
+  }
+
+  .codebox-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    width: 100%;
+    padding: 0.6rem;
+    background: #161b22;
+    border: none;
+    border-top: 1px solid var(--color-border);
+    color: var(--color-accent);
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s;
+  }
+
+  .codebox-toggle:hover {
+    background: rgba(56, 189, 248, 0.05);
+  }
+
+  .codebox.expanded .toggle-icon {
+    transform: rotate(180deg);
+  }
+
+  .toggle-icon {
+    transition: transform 0.2s;
+  }
+</style>

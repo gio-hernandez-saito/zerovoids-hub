@@ -1,0 +1,167 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { patterns, categories } from '../../data/patterns';
+---
+
+<Layout title="Design Patterns" section="patterns">
+  <div class="hero">
+    <h1>GoF 디자인 패턴</h1>
+    <p class="hero-desc">
+      23개 GoF 디자인 패턴을 <strong>TypeScript</strong>로 이해하고,
+      <strong>React</strong> · <strong>Vue</strong> · <strong>Svelte</strong>에서
+      어떻게 표현되는지 라이브 데모로 비교합니다.
+    </p>
+  </div>
+
+  {categories.map(cat => {
+    const catPatterns = patterns.filter(p => p.category === cat.id);
+    return (
+      <section class="category-section">
+        <h2 class="category-title" style={`--cat-color: ${cat.color}`}>
+          <span class="category-dot" />
+          {cat.name}
+          <span class="category-ko">{cat.nameKo}</span>
+          <span class="category-count">{catPatterns.length}</span>
+        </h2>
+        <div class="card-grid">
+          {catPatterns.map(p => (
+            <a href={`/patterns/${p.category}/${p.slug}/`} class="pattern-card" style={`--cat-color: ${cat.color}`}>
+              <h3 class="card-name">{p.name}</h3>
+              <p class="card-desc">{p.description}</p>
+              <div class="card-badges">
+                <span class="badge badge-ts">TS</span>
+                {p.frameworks.map(fw => (
+                  <span class={`badge badge-${fw}`}>{fw}</span>
+                ))}
+                {p.frameworks.length === 0 && (
+                  <span class="badge badge-only">TS Only</span>
+                )}
+              </div>
+            </a>
+          ))}
+        </div>
+      </section>
+    );
+  })}
+</Layout>
+
+<style>
+  .hero {
+    margin-bottom: 3rem;
+  }
+
+  .hero h1 {
+    font-size: 2.25rem;
+    margin-bottom: 0.75rem;
+    background: linear-gradient(135deg, #38bdf8, #818cf8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-desc {
+    color: var(--color-text-secondary);
+    font-size: 1.05rem;
+    line-height: 1.8;
+    max-width: 600px;
+  }
+
+  .hero-desc strong {
+    color: var(--color-text);
+  }
+
+  .category-section {
+    margin-bottom: 2.5rem;
+  }
+
+  .category-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .category-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--cat-color);
+  }
+
+  .category-ko {
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+    font-weight: 400;
+  }
+
+  .category-count {
+    margin-left: auto;
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    background: var(--color-bg-secondary);
+    padding: 0.15rem 0.5rem;
+    border-radius: 10px;
+  }
+
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+
+  .pattern-card {
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    padding: 1.25rem;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .pattern-card:hover {
+    background: var(--color-bg-card-hover);
+    border-color: var(--cat-color);
+    transform: translateY(-2px);
+    color: inherit;
+  }
+
+  .card-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #f1f5f9;
+    margin: 0;
+  }
+
+  .card-desc {
+    font-size: 0.825rem;
+    color: var(--color-text-secondary);
+    margin: 0;
+    flex: 1;
+  }
+
+  .card-badges {
+    display: flex;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+    margin-top: 0.25rem;
+  }
+
+  .badge {
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 0.15rem 0.45rem;
+    border-radius: 4px;
+    text-transform: uppercase;
+  }
+
+  .badge-ts { background: #1e3a5f; color: #3b82f6; }
+  .badge-react { background: #164e63; color: #22d3ee; }
+  .badge-vue { background: #14532d; color: #4ade80; }
+  .badge-svelte { background: #7f1d1d; color: #f87171; }
+  .badge-only { background: var(--color-border); color: var(--color-text-muted); }
+</style>
