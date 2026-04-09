@@ -13,14 +13,19 @@
   },
   "dependencies": {
     "@astrojs/react": "^5.0.3",
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.5.0",
+    "@react-three/postprocessing": "^3.0.4",
     "@types/d3": "^7.4.3",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "@types/three": "^0.183.1",
     "astro": "^6.1.5",
     "d3": "^7.9.0",
     "marked": "^18.0.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
-    "shiki": "^4.0.2"
+    "shiki": "^4.0.2",
+    "three": "^0.183.2"
   }
 }
