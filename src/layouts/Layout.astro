@@ -14,6 +14,8 @@ const { title, section = 'home' } = Astro.props;
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{title} — zerovoids.art</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <meta name="theme-color" content="#050508" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
@@ -21,7 +23,7 @@ const { title, section = 'home' } = Astro.props;
 <body>
   <header class="header">
     <a href="/" class="logo">
-      <span class="logo-icon">&#9670;</span>
+      <img src="/favicon.svg" alt="" class="logo-icon" width="20" height="20" />
       zerovoids
     </a>
     <nav class="nav">
@@ -64,8 +66,9 @@ const { title, section = 'home' } = Astro.props;
   .logo:hover { color: var(--color-accent); }
 
   .logo-icon {
-    color: var(--color-accent);
-    font-size: 1.2rem;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
   }
 
   .nav {

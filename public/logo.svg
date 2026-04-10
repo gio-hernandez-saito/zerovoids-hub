@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 120">
+  <!-- ZeroVoids — Full horizontal logo (mark + wordmark) -->
+
+  <!-- ─── Mark ─── -->
+  <g transform="translate(60, 60)">
+    <!-- Outer glow -->
+    <circle r="50" fill="none" stroke="rgba(78,205,196,0.04)" stroke-width="0.5"/>
+
+    <!-- Three-arc ring -->
+    <g transform="rotate(-90)">
+      <circle r="40" fill="none" stroke="#4ecdc4" stroke-width="3"
+        stroke-dasharray="75 176.3" stroke-linecap="round"/>
+      <circle r="40" fill="none" stroke="#ff6b6b" stroke-width="3"
+        stroke-dasharray="75 176.3" stroke-dashoffset="-83.8" stroke-linecap="round"/>
+      <circle r="40" fill="none" stroke="#6c5ce7" stroke-width="3"
+        stroke-dasharray="75 176.3" stroke-dashoffset="-167.5" stroke-linecap="round"/>
+    </g>
+
+    <!-- Junction dots -->
+    <circle cx="0" cy="-40" r="1.5" fill="#4ecdc4" opacity="0.5"/>
+    <circle cx="34.6" cy="20" r="1.5" fill="#ff6b6b" opacity="0.5"/>
+    <circle cx="-34.6" cy="20" r="1.5" fill="#6c5ce7" opacity="0.5"/>
+
+    <!-- Center void -->
+    <circle r="1.2" fill="rgba(255,255,255,0.15)"/>
+  </g>
+
+  <!-- ─── Divider ─── -->
+  <line x1="118" y1="30" x2="118" y2="90" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/>
+
+  <!-- ─── Wordmark ─── -->
+  <text x="135" y="57" font-family="'JetBrains Mono', 'Fira Code', monospace" font-size="15"
+    font-weight="500" letter-spacing="0.35em" fill="#e2e8f0">ZERO</text>
+  <text x="135" y="80" font-family="'JetBrains Mono', 'Fira Code', monospace" font-size="15"
+    font-weight="400" letter-spacing="0.35em" fill="#94a3b8">VOIDS</text>
+
+  <!-- Accent dot between words -->
+  <circle cx="232" cy="68" r="1.2" fill="#4ecdc4" opacity="0.4"/>
+</svg>

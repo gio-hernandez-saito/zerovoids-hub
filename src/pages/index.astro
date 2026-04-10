@@ -7,6 +7,9 @@ import VoidScene from '../components/void/VoidScene';
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>zerovoids.art</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="description" content="ZeroVoids — immersive space for ideas, design patterns, and creative exploration." />
+    <meta name="theme-color" content="#050508" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
@@ -135,8 +138,8 @@ import VoidScene from '../components/void/VoidScene';
       .phase-accelerate .neon-ring {
         animation: ring-pulse 2s ease-out infinite;
       }
-      .neon-ring:nth-child(2) { animation-delay: 0.7s; }
-      .neon-ring:nth-child(3) { animation-delay: 1.4s; }
+      .neon-ring:nth-child(2) { animation-delay: 0.7s; border-color: rgba(255, 107, 107, 0.15); }
+      .neon-ring:nth-child(3) { animation-delay: 1.4s; border-color: rgba(108, 92, 231, 0.15); }
       @keyframes ring-pulse {
         0% { transform: scale(0.5); opacity: 0.5; border-color: rgba(78, 205, 196, 0.4); }
         100% { transform: scale(3); opacity: 0; border-color: rgba(78, 205, 196, 0); }

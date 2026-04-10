@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- ZeroVoids — Void Portal Mark -->
+
+  <!-- Outer glow ring -->
+  <circle cx="100" cy="100" r="85" fill="none" stroke="rgba(78,205,196,0.04)" stroke-width="0.5"/>
+  <circle cx="100" cy="100" r="90" fill="none" stroke="rgba(108,92,231,0.03)" stroke-width="0.5"/>
+
+  <!-- Main three-arc ring -->
+  <g transform="rotate(-90 100 100)">
+    <!-- Constellation arc (teal) -->
+    <circle cx="100" cy="100" r="70" fill="none" stroke="#4ecdc4" stroke-width="4.5"
+      stroke-dasharray="131 309" stroke-linecap="round"/>
+    <!-- Crystal Lattice arc (coral) -->
+    <circle cx="100" cy="100" r="70" fill="none" stroke="#ff6b6b" stroke-width="4.5"
+      stroke-dasharray="131 309" stroke-dashoffset="-146.6" stroke-linecap="round"/>
+    <!-- Nebula arc (purple) -->
+    <circle cx="100" cy="100" r="70" fill="none" stroke="#6c5ce7" stroke-width="4.5"
+      stroke-dasharray="131 309" stroke-dashoffset="-293.2" stroke-linecap="round"/>
+  </g>
+
+  <!-- Inner accent ring -->
+  <circle cx="100" cy="100" r="56" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="0.5"/>
+
+  <!-- Junction node dots (at gap midpoints) -->
+  <!-- Top gap (~352°→8°, midpoint at 0° = top after rotation) -->
+  <circle cx="100" cy="30" r="2.5" fill="#4ecdc4" opacity="0.5"/>
+  <!-- Lower-right gap (~112°→128°, midpoint at ~120°) -->
+  <circle cx="160.6" cy="135" r="2.5" fill="#ff6b6b" opacity="0.5"/>
+  <!-- Lower-left gap (~232°→248°, midpoint at ~240°) -->
+  <circle cx="39.4" cy="135" r="2.5" fill="#6c5ce7" opacity="0.5"/>
+
+  <!-- Center void -->
+  <circle cx="100" cy="100" r="2" fill="rgba(255,255,255,0.12)"/>
+</svg>
