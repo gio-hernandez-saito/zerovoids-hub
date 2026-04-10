@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 
 export type PortalId = 'ideas' | 'patterns' | 'gallery';
 
@@ -9,6 +9,7 @@ export interface PortalConfig {
   color: string;
   url: string;
   position: [number, number, number];
+  disabled?: boolean;
 }
 
 export const PORTALS: PortalConfig[] = [
@@ -31,10 +32,11 @@ export const PORTALS: PortalConfig[] = [
   {
     id: 'gallery',
     label: 'NEBULA',
-    subtitle: 'emotional gallery',
+    subtitle: 'coming soon',
     color: '#6c5ce7',
     url: '/gallery/',
     position: [0, -3.5, 0],
+    disabled: true,
   },
 ];
 
@@ -43,6 +45,19 @@ export function usePortalInteraction() {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [activeTransitionColor, setActiveTransitionColor] = useState<string | null>(null);
   const navigateRef = useRef<string | null>(null);
+
+  // Reset transition state when restored from bfcache (browser back)
+  useEffect(() => {
+    const onPageShow = (e: PageTransitionEvent) => {
+      if (e.persisted) {
+        setIsTransitioning(false);
+        setActiveTransitionColor(null);
+        setHoveredPortal(null);
+      }
+    };
+    window.addEventListener('pageshow', onPageShow);
+    return () => window.removeEventListener('pageshow', onPageShow);
+  }, []);
 
   const handleHover = useCallback((id: PortalId | null) => {
     if (!isTransitioning) {
@@ -53,7 +68,7 @@ export function usePortalInteraction() {
   const handleClick = useCallback((id: PortalId) => {
     if (isTransitioning) return;
     const portal = PORTALS.find((p) => p.id === id);
-    if (!portal) return;
+    if (!portal || portal.disabled) return;
 
     setIsTransitioning(true);
     setActiveTransitionColor(portal.color);
