@@ -68,6 +68,12 @@ function CardPositioner() {
     const wrapper = document.querySelector('[data-portal-card-wrapper]') as HTMLElement | null;
     if (!wrapper) return;
 
+    // On mobile, CSS handles centering — don't set inline transform
+    if (window.innerWidth <= 768) {
+      wrapper.style.removeProperty('transform');
+      return;
+    }
+
     const portalId = wrapper.getAttribute('data-active-portal');
     if (!portalId) return;
 
@@ -311,7 +317,7 @@ export default function VoidScene() {
       flightPath.getPointAt(p, _camPos);
 
       let closest: PortalId | null = null;
-      let minDist = 10;
+      let minDist = 12;
       for (const portal of PORTALS) {
         const dx = _camPos.x - portal.position[0];
         const dy = _camPos.y - portal.position[1];
@@ -466,15 +472,7 @@ export default function VoidScene() {
           <div
             data-portal-card-wrapper
             data-active-portal={cardVisible ? activeCardPortalId : ''}
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              zIndex: 15,
-              opacity: cardVisible ? 1 : 0,
-              pointerEvents: cardVisible ? 'auto' : 'none',
-              transition: 'opacity 0.3s ease',
-            }}
+            className={`portal-card-wrapper ${cardVisible ? 'portal-card-wrapper--active' : ''}`}
           >
             <PortalCard
               portal={activeCardPortal}

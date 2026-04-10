@@ -341,7 +341,18 @@ import VoidScene from '../components/void/VoidScene';
 
       /* ===== PORTAL CARDS ===== */
       .portal-card-wrapper {
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 15;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
         will-change: transform, opacity;
+      }
+      .portal-card-wrapper--active {
+        opacity: 1;
+        pointer-events: auto;
       }
 
       .portal-card {
@@ -539,27 +550,53 @@ import VoidScene from '../components/void/VoidScene';
       /* ── Mobile layout ── */
       @media (max-width: 768px) {
         .portal-card-wrapper {
-          position: fixed !important;
-          top: auto !important;
-          bottom: 0 !important;
-          left: 0 !important;
-          right: 0 !important;
-          transform: none !important;
-          padding: 12px;
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
           z-index: 15;
         }
-        .portal-card-wrapper:not(.portal-card-wrapper--visible) {
-          transform: translateY(100%) !important;
+        .portal-card-wrapper--active {
+          opacity: 1;
+          pointer-events: auto;
         }
         .portal-card {
           width: 100%;
-          max-width: none;
+          max-width: 320px;
+          margin: 0 auto;
           clip-path: none !important;
-          border-radius: 8px 8px 0 0;
+          border-radius: 10px 10px 0 0;
+        }
+        .card-preview {
+          max-height: 90px;
+          overflow: hidden;
         }
         .card-preview-svg {
-          height: 80px;
+          height: 90px;
           object-fit: cover;
+        }
+        .card-desc {
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+
+        /* Scroll indicator — bigger touch targets */
+        .scroll-indicator {
+          right: 12px;
+        }
+        .scroll-waypoint {
+          padding: 10px 12px;
+          right: -12px;
+        }
+        .waypoint-dot {
+          width: 8px;
+          height: 8px;
+          margin-right: -4px;
+        }
+        .waypoint-label {
+          font-size: 0.4rem;
         }
       }
     </style>
