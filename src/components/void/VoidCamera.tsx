@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
-import { useFlightCtx } from './VoidScene';
+import { useFlightCtx } from './useScrollFlight';
 import { flightPath } from './useScrollFlight';
 
 const _targetPos = new THREE.Vector3();

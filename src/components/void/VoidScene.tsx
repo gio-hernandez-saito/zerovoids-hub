@@ -7,6 +7,7 @@ import {
   useMemo,
   useEffect,
   useState,
+  type MutableRefObject,
 } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import {
@@ -29,7 +30,7 @@ import {
   PORTALS,
   type PortalId,
 } from './usePortalInteraction';
-import { PORTAL_PROGRESS } from './useScrollFlight';
+import { PORTAL_PROGRESS, FlightContext, useFlightCtx, type FlightState } from './useScrollFlight';
 
 /* ═══════════════════════ Contexts ═══════════════════════ */
 
@@ -39,20 +40,6 @@ const PortalContext = createContext<PortalInteraction | null>(null);
 export function usePortalCtx() {
   const ctx = useContext(PortalContext);
   if (!ctx) throw new Error('Missing PortalContext');
-  return ctx;
-}
-
-export interface FlightState {
-  progress: React.MutableRefObject<number>;
-  target: React.MutableRefObject<number>;
-  velocity: React.MutableRefObject<number>;
-}
-
-const FlightContext = createContext<FlightState | null>(null);
-
-export function useFlightCtx() {
-  const ctx = useContext(FlightContext);
-  if (!ctx) throw new Error('Missing FlightContext');
   return ctx;
 }
 

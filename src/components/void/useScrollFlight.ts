@@ -1,4 +1,23 @@
+import { createContext, useContext } from 'react';
 import * as THREE from 'three';
+
+/* ═══════════════════════ Flight context ═══════════════════════ */
+
+export interface FlightState {
+  progress: React.MutableRefObject<number>;
+  target: React.MutableRefObject<number>;
+  velocity: React.MutableRefObject<number>;
+}
+
+export const FlightContext = createContext<FlightState | null>(null);
+
+export function useFlightCtx() {
+  const ctx = useContext(FlightContext);
+  if (!ctx) throw new Error('Missing FlightContext');
+  return ctx;
+}
+
+/* ═══════════════════════ Flight path ═══════════════════════ */
 
 /**
  * Camera flight path through the void.
