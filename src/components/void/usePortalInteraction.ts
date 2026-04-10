@@ -19,7 +19,7 @@ export const PORTALS: PortalConfig[] = [
     subtitle: '18 ideas mapped',
     color: '#4ecdc4',
     url: '/ideas/',
-    position: [-3.5, 2, 0],
+    position: [6, 2, -8],
   },
   {
     id: 'patterns',
@@ -27,7 +27,7 @@ export const PORTALS: PortalConfig[] = [
     subtitle: '23 design patterns',
     color: '#ff6b6b',
     url: '/patterns/',
-    position: [3.5, 2, 0],
+    position: [-7, -1, -38],
   },
   {
     id: 'gallery',
@@ -35,7 +35,7 @@ export const PORTALS: PortalConfig[] = [
     subtitle: 'coming soon',
     color: '#6c5ce7',
     url: '/gallery/',
-    position: [0, -3.5, 0],
+    position: [5, 3, -68],
     disabled: true,
   },
 ];

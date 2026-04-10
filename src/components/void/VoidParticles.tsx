@@ -2,6 +2,8 @@ import { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
+/* ── Shaders ────────────────────────────────────────────────── */
+
 const dustVertexShader = `
   attribute float aSize;
   attribute float aOpacity;
@@ -49,26 +51,29 @@ const starFragmentShader = `
   }
 `;
 
+/* ── Dust particles — distributed along the flight corridor ── */
+
+const DUST_COUNT = 4000;
+
 function DustParticles() {
   const ref = useRef<THREE.Points>(null);
   const velocities = useRef<Float32Array>(null);
 
   const { positions, sizes, opacities } = useMemo(() => {
-    const count = 2000;
-    const pos = new Float32Array(count * 3);
-    const sz = new Float32Array(count);
-    const op = new Float32Array(count);
-    const vel = new Float32Array(count * 3);
+    const pos = new Float32Array(DUST_COUNT * 3);
+    const sz = new Float32Array(DUST_COUNT);
+    const op = new Float32Array(DUST_COUNT);
+    const vel = new Float32Array(DUST_COUNT * 3);
 
-    for (let i = 0; i < count; i++) {
-      pos[i * 3] = (Math.random() - 0.5) * 40;
-      pos[i * 3 + 1] = (Math.random() - 0.5) * 40;
-      pos[i * 3 + 2] = (Math.random() - 0.5) * 30;
-      sz[i] = 1 + Math.random() * 2;
-      op[i] = 0.15 + Math.random() * 0.25;
-      vel[i * 3] = (Math.random() - 0.5) * 0.003;
-      vel[i * 3 + 1] = (Math.random() - 0.5) * 0.003;
-      vel[i * 3 + 2] = (Math.random() - 0.5) * 0.003;
+    for (let i = 0; i < DUST_COUNT; i++) {
+      pos[i * 3] = (Math.random() - 0.5) * 40;      // x: -20 … 20
+      pos[i * 3 + 1] = (Math.random() - 0.5) * 30;  // y: -15 … 15
+      pos[i * 3 + 2] = 30 - Math.random() * 130;     // z:  30 … -100
+      sz[i] = 1 + Math.random() * 2.5;
+      op[i] = 0.1 + Math.random() * 0.2;
+      vel[i * 3] = (Math.random() - 0.5) * 0.002;
+      vel[i * 3 + 1] = (Math.random() - 0.5) * 0.002;
+      vel[i * 3 + 2] = (Math.random() - 0.5) * 0.002;
     }
     velocities.current = vel;
     return { positions: pos, sizes: sz, opacities: op };
@@ -79,11 +84,11 @@ function DustParticles() {
     const posAttr = ref.current.geometry.getAttribute('position') as THREE.BufferAttribute;
     const arr = posAttr.array as Float32Array;
     const vel = velocities.current;
-    for (let i = 0; i < 2000; i++) {
+    for (let i = 0; i < DUST_COUNT; i++) {
       // Brownian drift
-      vel[i * 3] += (Math.random() - 0.5) * 0.0004;
-      vel[i * 3 + 1] += (Math.random() - 0.5) * 0.0004;
-      vel[i * 3 + 2] += (Math.random() - 0.5) * 0.0004;
+      vel[i * 3] += (Math.random() - 0.5) * 0.0003;
+      vel[i * 3 + 1] += (Math.random() - 0.5) * 0.0003;
+      vel[i * 3 + 2] += (Math.random() - 0.5) * 0.0003;
       // Damping
       vel[i * 3] *= 0.99;
       vel[i * 3 + 1] *= 0.99;
@@ -92,13 +97,6 @@ function DustParticles() {
       arr[i * 3] += vel[i * 3];
       arr[i * 3 + 1] += vel[i * 3 + 1];
       arr[i * 3 + 2] += vel[i * 3 + 2];
-
-      // Wrap around
-      for (let j = 0; j < 3; j++) {
-        const limit = j === 2 ? 15 : 20;
-        if (arr[i * 3 + j] > limit) arr[i * 3 + j] = -limit;
-        if (arr[i * 3 + j] < -limit) arr[i * 3 + j] = limit;
-      }
     }
     posAttr.needsUpdate = true;
   });
@@ -117,30 +115,38 @@ function DustParticles() {
   return (
     <points ref={ref} material={material}>
       <bufferGeometry>
-        <bufferAttribute attach="attributes-position" array={positions} count={2000} itemSize={3} />
-        <bufferAttribute attach="attributes-aSize" array={sizes} count={2000} itemSize={1} />
-        <bufferAttribute attach="attributes-aOpacity" array={opacities} count={2000} itemSize={1} />
+        <bufferAttribute attach="attributes-position" array={positions} count={DUST_COUNT} itemSize={3} />
+        <bufferAttribute attach="attributes-aSize" array={sizes} count={DUST_COUNT} itemSize={1} />
+        <bufferAttribute attach="attributes-aOpacity" array={opacities} count={DUST_COUNT} itemSize={1} />
       </bufferGeometry>
     </points>
   );
 }
 
+/* ── Stars — spherical shell that follows the camera ── */
+
+const STAR_COUNT = 1500;
+
 function StarParticles() {
+  const groupRef = useRef<THREE.Group>(null);
   const materialRef = useRef<THREE.ShaderMaterial>(null);
 
   const { positions, sizes, opacities, flickers } = useMemo(() => {
-    const count = 800;
-    const pos = new Float32Array(count * 3);
-    const sz = new Float32Array(count);
-    const op = new Float32Array(count);
-    const fl = new Float32Array(count);
+    const pos = new Float32Array(STAR_COUNT * 3);
+    const sz = new Float32Array(STAR_COUNT);
+    const op = new Float32Array(STAR_COUNT);
+    const fl = new Float32Array(STAR_COUNT);
 
-    for (let i = 0; i < count; i++) {
-      pos[i * 3] = (Math.random() - 0.5) * 50;
-      pos[i * 3 + 1] = (Math.random() - 0.5) * 50;
-      pos[i * 3 + 2] = -10 - Math.random() * 20;
-      sz[i] = 0.5 + Math.random() * 1.0;
-      op[i] = 0.1 + Math.random() * 0.2;
+    for (let i = 0; i < STAR_COUNT; i++) {
+      // Distribute on a spherical shell around origin
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.acos(2 * Math.random() - 1);
+      const r = 30 + Math.random() * 25; // radius 30–55
+      pos[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+      pos[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+      pos[i * 3 + 2] = r * Math.cos(phi);
+      sz[i] = 0.5 + Math.random() * 1.2;
+      op[i] = 0.12 + Math.random() * 0.25;
       fl[i] = Math.random() * 3 + 0.5;
     }
     return { positions: pos, sizes: sz, opacities: op, flickers: fl };
@@ -160,24 +166,32 @@ function StarParticles() {
     [],
   );
 
-  useFrame(({ clock }) => {
+  useFrame(({ clock, camera }) => {
     if (materialRef.current) {
       materialRef.current.uniforms.uTime.value = clock.getElapsedTime();
+    }
+    // Stars follow the camera — always surround the viewer
+    if (groupRef.current) {
+      groupRef.current.position.copy(camera.position);
     }
   });
 
   return (
-    <points material={material}>
-      <bufferGeometry>
-        <bufferAttribute attach="attributes-position" array={positions} count={800} itemSize={3} />
-        <bufferAttribute attach="attributes-aSize" array={sizes} count={800} itemSize={1} />
-        <bufferAttribute attach="attributes-aOpacity" array={opacities} count={800} itemSize={1} />
-        <bufferAttribute attach="attributes-aFlicker" array={flickers} count={800} itemSize={1} />
-      </bufferGeometry>
-      <primitive object={material} ref={materialRef} />
-    </points>
+    <group ref={groupRef}>
+      <points material={material}>
+        <bufferGeometry>
+          <bufferAttribute attach="attributes-position" array={positions} count={STAR_COUNT} itemSize={3} />
+          <bufferAttribute attach="attributes-aSize" array={sizes} count={STAR_COUNT} itemSize={1} />
+          <bufferAttribute attach="attributes-aOpacity" array={opacities} count={STAR_COUNT} itemSize={1} />
+          <bufferAttribute attach="attributes-aFlicker" array={flickers} count={STAR_COUNT} itemSize={1} />
+        </bufferGeometry>
+        <primitive object={material} ref={materialRef} />
+      </points>
+    </group>
   );
 }
+
+/* ── Export ── */
 
 export default function VoidParticles() {
   return (
