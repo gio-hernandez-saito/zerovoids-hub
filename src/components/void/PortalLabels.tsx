@@ -33,8 +33,8 @@ export default function PortalLabels({ hoveredPortal }: Props) {
 
       el.style.transform = `translate(-50%, 0) translate(${x}px, ${y}px)`;
 
-      if (hoveredPortal === portal.id) {
-        el.style.opacity = '1';
+      if (hoveredPortal === portal.id || portal.disabled) {
+        el.style.opacity = portal.disabled ? '0.4' : '1';
         el.style.pointerEvents = 'none';
       } else {
         el.style.opacity = '0';

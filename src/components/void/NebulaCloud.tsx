@@ -9,6 +9,7 @@ interface Props {
   onHover: (state: boolean) => void;
   onClick: () => void;
   isTransitioning: boolean;
+  disabled?: boolean;
 }
 
 const nebulaVertexShader = `
@@ -63,14 +64,20 @@ const COLORS = [
   new THREE.Color('#fd79a8'),
 ];
 
-export default function NebulaCloud({ position, hovered, dimmed, onHover, onClick, isTransitioning }: Props) {
+const DISABLED_COLORS = [
+  new THREE.Color('#3a3a3a'),
+  new THREE.Color('#4a4a4a'),
+  new THREE.Color('#333333'),
+];
+
+export default function NebulaCloud({ position, hovered, dimmed, onHover, onClick, isTransitioning, disabled }: Props) {
   const groupRef = useRef<THREE.Group>(null);
   const materialRef = useRef<THREE.ShaderMaterial>(null);
   const currentScale = useRef(1.0);
   const currentBrightness = useRef(1.0);
 
-  const targetScale = isTransitioning ? 0.01 : hovered ? 1.15 : 1.0;
-  const targetBrightness = hovered ? 2.5 : dimmed ? 0.6 : 1.0;
+  const targetScale = isTransitioning ? 0.01 : (!disabled && hovered) ? 1.15 : disabled ? 0.85 : 1.0;
+  const targetBrightness = disabled ? 0.3 : hovered ? 2.5 : dimmed ? 0.6 : 1.0;
 
   const { positions, sizes, colors, phases, orbitAxes, orbitSpeeds, radii } = useMemo(() => {
     const count = 400;
@@ -101,13 +108,14 @@ export default function NebulaCloud({ position, hovered, dimmed, onHover, onClic
       axes[i * 3 + 1] = ay / len;
       axes[i * 3 + 2] = az / len;
 
-      const c = COLORS[Math.floor(Math.random() * COLORS.length)];
+      const palette = disabled ? DISABLED_COLORS : COLORS;
+      const c = palette[Math.floor(Math.random() * palette.length)];
       col[i * 3] = c.r;
       col[i * 3 + 1] = c.g;
       col[i * 3 + 2] = c.b;
     }
     return { positions: pos, sizes: sz, colors: col, phases: ph, orbitAxes: axes, orbitSpeeds: spd, radii: rad };
-  }, []);
+  }, [disabled]);
 
   const material = useMemo(
     () =>
@@ -157,9 +165,10 @@ export default function NebulaCloud({ position, hovered, dimmed, onHover, onClic
       {/* Invisible hit target */}
       <mesh
         visible={false}
-        onPointerOver={() => onHover(true)}
-        onPointerOut={() => onHover(false)}
-        onClick={onClick}
+        onPointerOver={disabled ? undefined : () => onHover(true)}
+        onPointerOut={disabled ? undefined : () => onHover(false)}
+        onClick={disabled ? undefined : onClick}
+        raycast={disabled ? () => {} : undefined}
       >
         <sphereGeometry args={[1.2, 16, 16]} />
         <meshBasicMaterial transparent opacity={0} />

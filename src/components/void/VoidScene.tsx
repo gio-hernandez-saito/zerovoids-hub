@@ -66,6 +66,7 @@ function Scene() {
         onHover={makeHover('gallery')}
         onClick={makeClick('gallery')}
         isTransitioning={isTransitioning}
+        disabled={gallery.disabled}
       />
 
       <PortalLabels hoveredPortal={hoveredPortal} />
@@ -131,7 +132,7 @@ export default function VoidScene() {
                 fontSize: '0.75rem',
                 letterSpacing: '0.3em',
                 textTransform: 'uppercase' as const,
-                color: portal.color,
+                color: portal.disabled ? '#555' : portal.color,
                 marginBottom: '0.25rem',
               }}
             >
@@ -142,7 +143,7 @@ export default function VoidScene() {
                 fontSize: '0.6rem',
                 letterSpacing: '0.15em',
                 textTransform: 'uppercase' as const,
-                color: portal.color,
+                color: portal.disabled ? '#444' : portal.color,
                 opacity: 0.6,
               }}
             >
