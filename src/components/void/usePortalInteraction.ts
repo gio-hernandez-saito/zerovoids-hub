@@ -10,6 +10,7 @@ export interface PortalConfig {
   url: string;
   position: [number, number, number];
   disabled?: boolean;
+  description: string;
 }
 
 export const PORTALS: PortalConfig[] = [
@@ -20,6 +21,7 @@ export const PORTALS: PortalConfig[] = [
     color: '#4ecdc4',
     url: '/ideas/',
     position: [6, 2, -8],
+    description: 'Navigate a living constellation of ideas. Each node is a concept, each edge a connection — explore the network and discover unexpected links.',
   },
   {
     id: 'patterns',
@@ -28,6 +30,7 @@ export const PORTALS: PortalConfig[] = [
     color: '#ff6b6b',
     url: '/patterns/',
     position: [-7, -1, -38],
+    description: '23 GoF design patterns crystallized in TypeScript. Compare implementations across React, Vue, and Svelte frameworks.',
   },
   {
     id: 'gallery',
@@ -37,6 +40,7 @@ export const PORTALS: PortalConfig[] = [
     url: '/gallery/',
     position: [5, 3, -68],
     disabled: true,
+    description: 'A nebula of visual experiments and creative artifacts. This void is still forming — check back soon.',
   },
 ];
 

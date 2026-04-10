@@ -229,6 +229,10 @@ import VoidScene from '../components/void/VoidScene';
         100% { opacity: 0; transform: scale(2); }
       }
 
+    </style>
+
+    <!-- Global styles for React-rendered elements (VoidScene) -->
+    <style is:global>
       /* ===== SCROLL HINT ===== */
       .scroll-hint {
         position: fixed;
@@ -278,22 +282,33 @@ import VoidScene from '../components/void/VoidScene';
         top: 15%;
         bottom: 15%;
         z-index: 20;
-        pointer-events: none;
       }
       .scroll-track {
         position: relative;
         width: 1px;
         height: 100%;
         background: rgba(255, 255, 255, 0.05);
+        pointer-events: none;
       }
       .scroll-waypoint {
         position: absolute;
-        right: 0;
+        right: -8px;
         transform: translateY(-50%);
         display: flex;
         align-items: center;
         gap: 10px;
         flex-direction: row-reverse;
+        pointer-events: auto;
+        cursor: pointer;
+        padding: 6px 8px;
+        border-radius: 4px;
+        transition: background 0.2s ease;
+      }
+      .scroll-waypoint:hover {
+        background: rgba(255, 255, 255, 0.04);
+      }
+      .scroll-waypoint:hover .waypoint-label {
+        opacity: 0.8;
       }
       .waypoint-dot {
         width: 5px;
@@ -322,6 +337,230 @@ import VoidScene from '../components/void/VoidScene';
       @keyframes current-pulse {
         0%, 100% { box-shadow: 0 0 6px rgba(255, 255, 255, 0.4); }
         50% { box-shadow: 0 0 12px rgba(255, 255, 255, 0.8); }
+      }
+
+      /* ===== PORTAL CARDS ===== */
+      .portal-card-wrapper {
+        will-change: transform, opacity;
+      }
+
+      .portal-card {
+        position: relative;
+        width: 260px;
+        padding: 16px;
+        background: rgba(5, 5, 12, 0.88);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        font-family: 'JetBrains Mono', monospace;
+        overflow: hidden;
+        transform: scale(0.92) translateY(8px);
+        opacity: 0;
+        transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+      }
+      .portal-card--visible {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+      }
+
+      /* ── Per-portal shapes ── */
+      .portal-card--ideas {
+        clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 22px, 100% 100%, 22px 100%, 0 calc(100% - 22px));
+        border-color: rgba(78, 205, 196, 0.15);
+        box-shadow: 0 0 30px rgba(78, 205, 196, 0.06), inset 0 0 30px rgba(78, 205, 196, 0.02);
+      }
+      .portal-card--patterns {
+        clip-path: polygon(14px 0, calc(100% - 14px) 0, 100% 14px, 100% calc(100% - 14px), calc(100% - 14px) 100%, 14px 100%, 0 calc(100% - 14px), 0 14px);
+        border-color: rgba(255, 107, 107, 0.15);
+        box-shadow: 0 0 30px rgba(255, 107, 107, 0.06), inset 0 0 30px rgba(255, 107, 107, 0.02);
+      }
+      .portal-card--gallery {
+        clip-path: polygon(0 10px, 10px 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%);
+        border-color: rgba(108, 92, 231, 0.1);
+        box-shadow: 0 0 20px rgba(108, 92, 231, 0.04);
+        opacity: 0.7;
+      }
+
+      /* ── Scanlines ── */
+      .card-scanlines {
+        position: absolute;
+        inset: 0;
+        background: repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 2px,
+          rgba(255, 255, 255, 0.008) 2px,
+          rgba(255, 255, 255, 0.008) 4px
+        );
+        pointer-events: none;
+        z-index: 1;
+      }
+
+      /* ── Corner brackets SVG ── */
+      .card-corners {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 2;
+      }
+
+      /* ── Header ── */
+      .card-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 4px;
+        position: relative;
+        z-index: 3;
+      }
+      .card-status {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--pc);
+        box-shadow: 0 0 6px var(--pc);
+        animation: status-blink 2s ease-in-out infinite;
+      }
+      .portal-card--gallery .card-status {
+        background: #444;
+        box-shadow: none;
+        animation: none;
+      }
+      @keyframes status-blink {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.4; }
+      }
+      .card-label {
+        font-size: 0.65rem;
+        font-weight: 500;
+        letter-spacing: 0.25em;
+        color: var(--pc);
+        text-transform: uppercase;
+      }
+
+      .card-subtitle {
+        font-size: 0.5rem;
+        letter-spacing: 0.15em;
+        color: rgba(255, 255, 255, 0.3);
+        text-transform: uppercase;
+        margin-bottom: 10px;
+        padding-left: 14px;
+        position: relative;
+        z-index: 3;
+      }
+
+      /* ── Divider ── */
+      .card-divider {
+        height: 1px;
+        background: linear-gradient(90deg, var(--pc-dim), transparent);
+        opacity: 0.2;
+        margin-bottom: 12px;
+        position: relative;
+        z-index: 3;
+      }
+
+      /* ── Preview ── */
+      .card-preview {
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.04);
+        border-radius: 2px;
+        overflow: hidden;
+        margin-bottom: 12px;
+        position: relative;
+        z-index: 3;
+      }
+      .card-preview-svg {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+
+      /* ── Description ── */
+      .card-desc {
+        font-size: 0.55rem;
+        line-height: 1.7;
+        color: rgba(255, 255, 255, 0.45);
+        margin: 0 0 14px 0;
+        position: relative;
+        z-index: 3;
+      }
+
+      /* ── CTA button ── */
+      .card-cta {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+        padding: 8px 0;
+        background: transparent;
+        border: 1px solid var(--pc-dim);
+        color: var(--pc);
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.55rem;
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        position: relative;
+        z-index: 3;
+      }
+      .portal-card--ideas .card-cta {
+        clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+      }
+      .portal-card--patterns .card-cta {
+        clip-path: polygon(6px 0, calc(100% - 6px) 0, 100% 6px, 100% calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 0 calc(100% - 6px), 0 6px);
+      }
+      .card-cta:hover {
+        background: rgba(255, 255, 255, 0.04);
+        box-shadow: 0 0 20px rgba(255, 255, 255, 0.05), inset 0 0 20px rgba(255, 255, 255, 0.02);
+      }
+      .cta-arrow {
+        transition: transform 0.2s ease;
+      }
+      .card-cta:hover .cta-arrow {
+        transform: translateX(3px);
+      }
+
+      /* ── Sealed state ── */
+      .card-sealed {
+        text-align: center;
+        font-size: 0.5rem;
+        letter-spacing: 0.25em;
+        color: #555;
+        padding: 8px 0;
+        border: 1px dashed #333;
+        position: relative;
+        z-index: 3;
+      }
+
+      /* ── Mobile layout ── */
+      @media (max-width: 768px) {
+        .portal-card-wrapper {
+          position: fixed !important;
+          top: auto !important;
+          bottom: 0 !important;
+          left: 0 !important;
+          right: 0 !important;
+          transform: none !important;
+          padding: 12px;
+          z-index: 15;
+        }
+        .portal-card-wrapper:not(.portal-card-wrapper--visible) {
+          transform: translateY(100%) !important;
+        }
+        .portal-card {
+          width: 100%;
+          max-width: none;
+          clip-path: none !important;
+          border-radius: 8px 8px 0 0;
+        }
+        .card-preview-svg {
+          height: 80px;
+          object-fit: cover;
+        }
       }
     </style>
   </head>

@@ -9,7 +9,7 @@ import {
   useState,
   type MutableRefObject,
 } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import {
   EffectComposer,
   Bloom,
@@ -24,13 +24,15 @@ import ConstellationPortal from './ConstellationPortal';
 import CrystalLattice from './CrystalLattice';
 import NebulaCloud from './NebulaCloud';
 import PortalLabels from './PortalLabels';
+import PortalCard from './PortalCard';
 import TransitionOverlay from './TransitionOverlay';
 import {
   usePortalInteraction,
   PORTALS,
   type PortalId,
+  type PortalConfig,
 } from './usePortalInteraction';
-import { PORTAL_PROGRESS, FlightContext, useFlightCtx, type FlightState } from './useScrollFlight';
+import { PORTAL_PROGRESS, FlightContext, useFlightCtx, flightPath, type FlightState } from './useScrollFlight';
 
 /* ═══════════════════════ Contexts ═══════════════════════ */
 
@@ -53,6 +55,50 @@ function FlightController() {
     progress.current += (target.current - progress.current) * 0.05;
     velocity.current = progress.current - prev;
   });
+  return null;
+}
+
+/* ═══════════════════════ Card positioner (inside Canvas) ═══════════════════════ */
+
+function CardPositioner() {
+  const { camera, size } = useThree();
+  const vec = useRef(new THREE.Vector3());
+
+  useFrame(() => {
+    const wrapper = document.querySelector('[data-portal-card-wrapper]') as HTMLElement | null;
+    if (!wrapper) return;
+
+    const portalId = wrapper.getAttribute('data-active-portal');
+    if (!portalId) return;
+
+    const portal = PORTALS.find(p => p.id === portalId);
+    if (!portal) return;
+
+    vec.current.set(...portal.position);
+    vec.current.project(camera);
+
+    const isBehind = vec.current.z > 1;
+    if (isBehind) return;
+
+    const sx = (vec.current.x * 0.5 + 0.5) * size.width;
+    const sy = (-vec.current.y * 0.5 + 0.5) * size.height;
+
+    // Place card to the right or left of portal
+    const cardW = 270;
+    const cardH = 340;
+    const gap = 50;
+    let cx: number, cy: number;
+
+    if (sx < size.width * 0.55) {
+      cx = Math.min(sx + gap, size.width - cardW - 16);
+    } else {
+      cx = Math.max(sx - gap - cardW, 16);
+    }
+    cy = Math.max(16, Math.min(size.height - cardH - 16, sy - cardH * 0.35));
+
+    wrapper.style.transform = `translate(${cx}px, ${cy}px)`;
+  });
+
   return null;
 }
 
@@ -82,7 +128,7 @@ function SpaceRing({
       new THREE.MeshBasicMaterial({
         color: new THREE.Color(color),
         transparent: true,
-        opacity: 0.06,
+        opacity: 0.01,
         side: THREE.DoubleSide,
         blending: THREE.AdditiveBlending,
         toneMapped: false,
@@ -138,7 +184,7 @@ function Scene() {
       <FlightController />
       <VoidCamera />
       <VoidParticles />
-      <SpaceRings />
+      {/* SpaceRings removed — too distracting, no visual payoff */}
 
       <ConstellationPortal
         position={PORTALS[0].position}
@@ -167,6 +213,7 @@ function Scene() {
       />
 
       <PortalLabels hoveredPortal={hoveredPortal} />
+      <CardPositioner />
 
       <EffectComposer>
         <Bloom
@@ -201,6 +248,10 @@ function ScrollIndicator({ flight }: { flight: FlightState }) {
     return () => cancelAnimationFrame(raf);
   }, [flight]);
 
+  const jumpTo = useCallback((progressValue: number) => {
+    flight.target.current = progressValue;
+  }, [flight]);
+
   return (
     <div className="scroll-indicator">
       <div className="scroll-track">
@@ -209,6 +260,7 @@ function ScrollIndicator({ flight }: { flight: FlightState }) {
             key={PORTALS[i].id}
             className="scroll-waypoint"
             style={{ top: `${pos * 100}%` }}
+            onClick={() => jumpTo(pos)}
           >
             <div
               className="waypoint-dot"
@@ -245,6 +297,44 @@ export default function VoidScene() {
   );
 
   const [showHint, setShowHint] = useState(true);
+  const [nearPortal, setNearPortal] = useState<PortalId | null>(null);
+  const isMobile = useRef(false);
+
+  // Proximity detection — show card when camera is near a portal
+  useEffect(() => {
+    isMobile.current = window.matchMedia('(max-width: 768px)').matches;
+
+    const _camPos = new THREE.Vector3();
+    let raf: number;
+    const check = () => {
+      const p = flight.progress.current;
+      flightPath.getPointAt(p, _camPos);
+
+      let closest: PortalId | null = null;
+      let minDist = 10;
+      for (const portal of PORTALS) {
+        const dx = _camPos.x - portal.position[0];
+        const dy = _camPos.y - portal.position[1];
+        const dz = _camPos.z - portal.position[2];
+        const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        if (dist < minDist) {
+          minDist = dist;
+          closest = portal.id;
+        }
+      }
+      setNearPortal(prev => prev !== closest ? closest : prev);
+      raf = requestAnimationFrame(check);
+    };
+    raf = requestAnimationFrame(check);
+    return () => cancelAnimationFrame(raf);
+  }, [flight]);
+
+  // The portal to show a card for: hover on desktop, proximity on mobile
+  const activeCardPortalId = interaction.hoveredPortal || nearPortal;
+  const activeCardPortal = activeCardPortalId
+    ? PORTALS.find(p => p.id === activeCardPortalId) || null
+    : null;
+  const cardVisible = !!activeCardPortal && !interaction.isTransitioning;
 
   useEffect(() => {
     let hasScrolled = false;
@@ -371,6 +461,29 @@ export default function VoidScene() {
             active={interaction.isTransitioning}
             color={interaction.activeTransitionColor}
           />
+
+          {/* Portal hover card */}
+          <div
+            data-portal-card-wrapper
+            data-active-portal={cardVisible ? activeCardPortalId : ''}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              zIndex: 15,
+              opacity: cardVisible ? 1 : 0,
+              pointerEvents: cardVisible ? 'auto' : 'none',
+              transition: 'opacity 0.3s ease',
+            }}
+          >
+            <PortalCard
+              portal={activeCardPortal}
+              visible={cardVisible}
+              onClick={() => {
+                if (activeCardPortalId) interaction.handleClick(activeCardPortalId);
+              }}
+            />
+          </div>
 
           {/* Scroll hint */}
           <div

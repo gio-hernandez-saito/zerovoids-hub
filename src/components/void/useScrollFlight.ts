@@ -46,5 +46,5 @@ export const flightPath = new THREE.CatmullRomCurve3(
   0.5,
 );
 
-/** Approximate scroll progress (0–1) where each portal is closest to the camera. */
-export const PORTAL_PROGRESS = [0.25, 0.58, 0.83];
+/** Scroll progress (0–1) — slightly before closest approach so the portal is visible ahead. */
+export const PORTAL_PROGRESS = [0.225, 0.515, 0.80];
