@@ -11,59 +11,344 @@ import VoidScene from '../components/void/VoidScene';
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
     <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
       html, body {
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
+        width: 100%; height: 100%; overflow: hidden;
         background: #050508;
         font-family: 'JetBrains Mono', monospace;
         -webkit-font-smoothing: antialiased;
       }
+
+      /* ===== VOID LAUNCH SEQUENCE ===== */
       #void-loading {
-        position: fixed;
-        inset: 0;
+        position: fixed; inset: 0; z-index: 9999;
         background: #050508;
-        z-index: 9999;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: opacity 0.6s ease;
+        display: flex; align-items: center; justify-content: center;
+        flex-direction: column;
+        transition: opacity 0.8s ease;
+        overflow: hidden;
       }
       #void-loading.loaded {
-        opacity: 0;
-        pointer-events: none;
+        opacity: 0; pointer-events: none;
       }
-      #void-loading span {
-        color: #1a1a2e;
-        font-size: 0.7rem;
+
+      /* --- Starfield --- */
+      .starfield {
+        position: absolute; inset: 0; overflow: hidden;
+      }
+      .star {
+        position: absolute;
+        width: 1px; height: 1px;
+        background: #fff;
+        border-radius: 50%;
+        opacity: 0.3;
+      }
+      .phase-accelerate .star {
+        animation: star-warp 0.6s linear infinite;
+      }
+      .phase-breach .star {
+        animation: star-converge 0.5s ease-in forwards;
+      }
+      @keyframes star-warp {
+        from { transform: translateY(0); opacity: 0.6; }
+        to { transform: translateY(100vh); opacity: 0; }
+      }
+      @keyframes star-converge {
+        to { transform: translate(calc(50vw - var(--sx)), calc(50vh - var(--sy))); opacity: 0; }
+      }
+
+      /* --- Rocket --- */
+      .rocket-container {
+        position: relative; z-index: 2;
+        display: flex; flex-direction: column; align-items: center;
+        transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .phase-accelerate .rocket-container {
+        transform: translateY(-30vh);
+      }
+      .phase-breach .rocket-container {
+        transform: translateY(-120vh);
+        transition-duration: 0.6s;
+      }
+
+      .rocket-svg {
+        width: 40px; height: 80px;
+        filter: drop-shadow(0 0 8px #4ecdc4) drop-shadow(0 0 20px rgba(78, 205, 196, 0.3));
+      }
+
+      /* --- Engine glow --- */
+      .engine-glow {
+        width: 20px; height: 60px;
+        background: linear-gradient(to bottom, #4ecdc4, #ff6b6b, transparent);
+        border-radius: 50% 50% 50% 50% / 20% 20% 80% 80%;
+        filter: blur(6px);
+        opacity: 0;
+        transform-origin: top center;
+        animation: none;
+      }
+      .phase-ignition .engine-glow {
+        opacity: 0.6;
+        animation: engine-flicker 0.15s ease-in-out infinite alternate;
+      }
+      .phase-accelerate .engine-glow {
+        opacity: 1;
+        height: 120px;
+        filter: blur(8px);
+        background: linear-gradient(to bottom, #fff, #4ecdc4, #ff6b6b, transparent);
+        animation: engine-flicker 0.08s ease-in-out infinite alternate;
+      }
+      @keyframes engine-flicker {
+        from { transform: scaleX(0.8) scaleY(0.95); }
+        to { transform: scaleX(1.1) scaleY(1.05); }
+      }
+
+      /* --- Engine particles --- */
+      .engine-particles {
+        position: absolute;
+        top: 80px; left: 50%;
+        width: 0; height: 0;
+      }
+      .e-particle {
+        position: absolute;
+        width: 2px; height: 2px;
+        border-radius: 50%;
+        opacity: 0;
+      }
+      .phase-ignition .e-particle,
+      .phase-accelerate .e-particle {
+        animation: particle-fall var(--dur) var(--delay) ease-out infinite;
+      }
+      @keyframes particle-fall {
+        0% { transform: translate(var(--dx), 0) scale(1); opacity: 0.9; }
+        100% { transform: translate(calc(var(--dx) * 3), var(--dist)) scale(0); opacity: 0; }
+      }
+
+      /* --- Neon ring pulse --- */
+      .neon-ring {
+        position: absolute; z-index: 1;
+        width: 120px; height: 120px;
+        border: 1px solid rgba(78, 205, 196, 0.15);
+        border-radius: 50%;
+        opacity: 0;
+      }
+      .phase-ignition .neon-ring,
+      .phase-accelerate .neon-ring {
+        animation: ring-pulse 2s ease-out infinite;
+      }
+      .neon-ring:nth-child(2) { animation-delay: 0.7s; }
+      .neon-ring:nth-child(3) { animation-delay: 1.4s; }
+      @keyframes ring-pulse {
+        0% { transform: scale(0.5); opacity: 0.5; border-color: rgba(78, 205, 196, 0.4); }
+        100% { transform: scale(3); opacity: 0; border-color: rgba(78, 205, 196, 0); }
+      }
+
+      /* --- Text --- */
+      .loading-text {
+        position: absolute; z-index: 3;
+        bottom: 25%;
+        text-align: center;
+      }
+      .phase-label {
+        font-size: 0.65rem;
         letter-spacing: 0.4em;
         text-transform: uppercase;
-        animation: pulse-load 2s ease-in-out infinite;
+        color: #4ecdc4;
+        opacity: 0;
+        transition: opacity 0.4s, letter-spacing 1s ease;
       }
-      @keyframes pulse-load {
-        0%, 100% { opacity: 0.3; }
-        50% { opacity: 0.8; }
+      .phase-ignition .phase-label[data-phase="ignition"] { opacity: 1; }
+      .phase-accelerate .phase-label[data-phase="accelerate"] { opacity: 1; letter-spacing: 0.8em; }
+      .phase-breach .phase-label[data-phase="breach"] { opacity: 1; }
+
+      /* --- Glitch text --- */
+      .glitch {
+        position: relative;
+      }
+      .glitch::before, .glitch::after {
+        content: attr(data-text);
+        position: absolute; left: 0; top: 0;
+        width: 100%; height: 100%;
+        opacity: 0.8;
+      }
+      .glitch::before {
+        color: #ff6b6b;
+        animation: glitch-1 3s infinite linear;
+        clip-path: inset(0 0 80% 0);
+      }
+      .glitch::after {
+        color: #6c5ce7;
+        animation: glitch-2 3s infinite linear;
+        clip-path: inset(80% 0 0 0);
+      }
+      @keyframes glitch-1 {
+        0%, 90%, 100% { transform: none; }
+        92% { transform: translateX(-2px); }
+        94% { transform: translateX(2px); }
+      }
+      @keyframes glitch-2 {
+        0%, 88%, 100% { transform: none; }
+        90% { transform: translateX(2px); }
+        93% { transform: translateX(-1px); }
+      }
+
+      /* --- Progress bar --- */
+      .progress-track {
+        position: absolute; z-index: 3;
+        bottom: 18%;
+        width: 160px; height: 2px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 1px;
+        overflow: hidden;
+      }
+      .progress-fill {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, #4ecdc4, #ff6b6b, #6c5ce7);
+        border-radius: 1px;
+        transition: width 0.3s ease;
+        box-shadow: 0 0 8px rgba(78, 205, 196, 0.6);
+      }
+
+      /* --- Central flash (breach) --- */
+      .breach-flash {
+        position: absolute; inset: 0; z-index: 4;
+        background: radial-gradient(circle at center, rgba(255,255,255,0.9) 0%, transparent 70%);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+      }
+      .phase-breach .breach-flash {
+        animation: flash-burst 0.8s ease-out forwards;
+      }
+      @keyframes flash-burst {
+        0% { opacity: 0; transform: scale(0.2); }
+        30% { opacity: 0.8; transform: scale(1); }
+        100% { opacity: 0; transform: scale(2); }
       }
     </style>
   </head>
   <body>
-    <div id="void-loading"><span>entering void</span></div>
+    <div id="void-loading" class="phase-ignition">
+      <!-- Starfield -->
+      <div class="starfield" id="starfield"></div>
+
+      <!-- Neon rings -->
+      <div class="neon-ring"></div>
+      <div class="neon-ring"></div>
+      <div class="neon-ring"></div>
+
+      <!-- Rocket -->
+      <div class="rocket-container">
+        <svg class="rocket-svg" viewBox="0 0 40 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <path d="M20 2 C20 2, 32 20, 32 50 L32 62 L26 58 L20 62 L14 58 L8 62 L8 50 C8 20, 20 2, 20 2Z"
+                stroke="#4ecdc4" stroke-width="1" fill="none"
+                stroke-linecap="round" stroke-linejoin="round" />
+          <!-- Window -->
+          <circle cx="20" cy="30" r="5" stroke="#4ecdc4" stroke-width="0.8" fill="rgba(78,205,196,0.08)" />
+          <!-- Fins -->
+          <path d="M8 50 L2 62 L8 58" stroke="#ff6b6b" stroke-width="0.8" fill="none" />
+          <path d="M32 50 L38 62 L32 58" stroke="#ff6b6b" stroke-width="0.8" fill="none" />
+          <!-- Nose accent -->
+          <path d="M16 12 Q20 4, 24 12" stroke="#6c5ce7" stroke-width="0.6" fill="none" />
+        </svg>
+        <div class="engine-glow"></div>
+        <!-- Engine particles -->
+        <div class="engine-particles" id="engine-particles"></div>
+      </div>
+
+      <!-- Text -->
+      <div class="loading-text">
+        <div class="phase-label glitch" data-phase="ignition" data-text="IGNITION">IGNITION</div>
+        <div class="phase-label glitch" data-phase="accelerate" data-text="ENTERING VOID">ENTERING VOID</div>
+        <div class="phase-label" data-phase="breach">VOID READY</div>
+      </div>
+
+      <!-- Progress -->
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+
+      <!-- Breach flash -->
+      <div class="breach-flash"></div>
+    </div>
+
     <VoidScene client:only="react" />
+
     <script>
-      // Hide loading screen once canvas is ready
-      const checkReady = setInterval(() => {
-        if (document.querySelector('canvas')) {
-          clearInterval(checkReady);
-          setTimeout(() => {
-            document.getElementById('void-loading')?.classList.add('loaded');
-          }, 400);
+      // Generate starfield
+      const starfield = document.getElementById('starfield')!;
+      for (let i = 0; i < 80; i++) {
+        const star = document.createElement('div');
+        star.className = 'star';
+        const x = Math.random() * 100;
+        const y = Math.random() * 100;
+        star.style.left = x + '%';
+        star.style.top = y + '%';
+        star.style.setProperty('--sx', x + 'vw');
+        star.style.setProperty('--sy', y + 'vh');
+        star.style.opacity = String(0.1 + Math.random() * 0.5);
+        star.style.width = star.style.height = (0.5 + Math.random() * 1.5) + 'px';
+        star.style.animationDelay = (Math.random() * 2) + 's';
+        starfield.appendChild(star);
+      }
+
+      // Generate engine particles
+      const ep = document.getElementById('engine-particles')!;
+      const colors = ['#4ecdc4', '#ff6b6b', '#6c5ce7', '#fff'];
+      for (let i = 0; i < 20; i++) {
+        const p = document.createElement('div');
+        p.className = 'e-particle';
+        p.style.background = colors[Math.floor(Math.random() * colors.length)];
+        p.style.setProperty('--dx', (Math.random() * 20 - 10) + 'px');
+        p.style.setProperty('--dist', (40 + Math.random() * 80) + 'px');
+        p.style.setProperty('--dur', (0.4 + Math.random() * 0.6) + 's');
+        p.style.setProperty('--delay', (Math.random() * 0.5) + 's');
+        ep.appendChild(p);
+      }
+
+      // Phase management
+      const loader = document.getElementById('void-loading')!;
+      const fill = document.getElementById('progress-fill')!;
+      let progress = 0;
+      let canvasReady = false;
+
+      // Fake progress + canvas detection
+      const tick = setInterval(() => {
+        if (!canvasReady && document.querySelector('canvas')) {
+          canvasReady = true;
         }
-      }, 100);
+
+        if (!canvasReady) {
+          // Slow progress up to 60%
+          if (progress < 60) {
+            progress += 0.5 + Math.random() * 1.5;
+            progress = Math.min(progress, 60);
+          }
+        } else {
+          // Rush to 100%
+          progress += (100 - progress) * 0.15;
+          if (progress > 99.5) progress = 100;
+        }
+
+        fill.style.width = progress + '%';
+
+        // Phase transitions
+        if (progress >= 30 && !loader.classList.contains('phase-accelerate') && !loader.classList.contains('phase-breach')) {
+          loader.classList.remove('phase-ignition');
+          loader.classList.add('phase-accelerate');
+        }
+        if (progress >= 85 && !loader.classList.contains('phase-breach')) {
+          loader.classList.remove('phase-accelerate');
+          loader.classList.add('phase-breach');
+        }
+        if (progress >= 100) {
+          clearInterval(tick);
+          setTimeout(() => {
+            loader.classList.add('loaded');
+          }, 800);
+        }
+      }, 50);
     </script>
   </body>
 </html>
