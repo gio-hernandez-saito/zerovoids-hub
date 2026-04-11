@@ -26,6 +26,15 @@ pnpm-debug.log*
 # omc state
 .omc/
 
+# claude code project state
+.claude/
+
 # generated data (rebuilt from submodules)
 src/data/ideas.json
 src/data/network.json
+
+# constellation sources (private; only generated JSON is committed)
+constellations/source/
+constellations/preview/
+constellations/.venv/
+constellations/debug/

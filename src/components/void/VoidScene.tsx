@@ -21,8 +21,12 @@ import * as THREE from 'three';
 import VoidCamera from './VoidCamera';
 import VoidParticles from './VoidParticles';
 import ConstellationPortal from './ConstellationPortal';
+import ConstellationFigure, { type ConstellationData } from './ConstellationFigure';
 import CrystalLattice from './CrystalLattice';
 import NebulaCloud from './NebulaCloud';
+
+import chesterData from '../../data/constellations/chester.json';
+import lincecumData from '../../data/constellations/TimLincecum.json';
 import PortalLabels from './PortalLabels';
 import PortalCard from './PortalCard';
 import TransitionOverlay from './TransitionOverlay';
@@ -216,6 +220,28 @@ function Scene() {
         onClick={makeClick('gallery')}
         isTransitioning={isTransitioning}
         disabled={PORTALS[2].disabled}
+      />
+
+      {/* Constellation stretch — chester then lincecum at the flight tail */}
+      <ConstellationFigure
+        data={chesterData as ConstellationData}
+        position={[0.9, 0.5, -98]}
+        scale={3.2}
+        fadeRange={[0.66, 0.74]}
+        fadeOutRange={[0.86, 0.92]}
+        seed={42}
+      />
+      <ConstellationFigure
+        data={lincecumData as ConstellationData}
+        position={[-0.4, 0.3, -118]}
+        scale={3.6}
+        fadeRange={[0.86, 0.94]}
+        edgeLineColor={[0.97, 0.55, 0.25]}
+        interiorLineColor={[1.0, 0.7, 0.4]}
+        interiorColor={[1.0, 0.85, 0.7]}
+        detailLineColor={[1.0, 0.65, 0.35]}
+        detailColor={[1.0, 0.78, 0.55]}
+        seed={2024}
       />
 
       <PortalLabels hoveredPortal={hoveredPortal} />
